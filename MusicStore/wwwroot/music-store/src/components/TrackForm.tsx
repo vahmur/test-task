@@ -19,10 +19,10 @@ interface IAppStates {
 
 interface IArtistFormStates {
     error: string;
-    AlbumID: number;
-    AlbumIDError: string;
-    TrackName: string;
-    TrackNameError: string;
+    albumID: number;
+    albumIDError: string;
+    trackName: string;
+    trackNameError: string;
 }
 
 class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> {
@@ -32,10 +32,10 @@ class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> 
 
         this.state = {
             error: "",
-            AlbumID: (this.props.data.action === "edit") ? this.props.data.data.AlbumID : null,
-            AlbumIDError: "",
-            TrackName: (this.props.data.action === "edit") ? this.props.data.data.TrackName : "",
-            TrackNameError: "",
+            albumID: (this.props.data.action === "edit") ? this.props.data.data.albumID : null,
+            albumIDError: "",
+            trackName: (this.props.data.action === "edit") ? this.props.data.data.trackName : "",
+            trackNameError: "",
         };
     }
 
@@ -57,14 +57,24 @@ class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> 
 
         let error: boolean = false;
 
-        if (!this.state.AlbumID) {
-            this.setState({ AlbumIDError: "Required!" });
+        if (!this.state.albumID) {
+            this.setState({ albumIDError: "Required!" });
             error = true;
         }
+        else {
+            if (this.state.albumIDError) {
+                this.setState({ albumIDError: "" });
+            }
+        }
 
-        if (!this.state.TrackName) {
-            this.setState({ TrackNameError: "Required!" });
+        if (!this.state.trackName) {
+            this.setState({ trackNameError: "Required!" });
             error = true;
+        }
+        else {
+            if (this.state.trackNameError) {
+                this.setState({ trackNameError: "" });
+            }
         }
 
         if (!error) {
@@ -77,20 +87,20 @@ class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> 
     }
 
     private handleNameChange: (event: any) => void = (event) => {
-        this.setState({ TrackName: event.target.value });
+        this.setState({ trackName: event.target.value });
     };
 
     private handleIDChange: (value: any) => void = (value) => {
-        this.setState({ AlbumID: value.AlbumID });
+        this.setState({ albumID: value.albumID });
     };
 
     render(): JSX.Element {
 
-        const TrackID: JSX.Element | null = (this.props.data.action === "edit") ?
+        const trackID: JSX.Element | null = (this.props.data.action === "edit") ?
             (
                 <div className="form-group">
-                    <label htmlFor="TrackID">Track id*</label>
-                    <input className="form-control" id="TrackID" value={this.props.data.data.TrackID} disabled={true} />
+                    <label htmlFor="trackID">Track id*</label>
+                    <input className="form-control" id="trackID" value={this.props.data.data.trackID} readOnly={true} />
                 </div>
             )
             :
@@ -99,28 +109,28 @@ class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> 
         return (
             <form>
                 <div className="text-danger">{this.state.error}</div>
-                {TrackID}
+                {trackID}
                 <div className="form-group">
-                    <label htmlFor="AlbumID">Album*</label>
+                    <label htmlFor="albumID">Album*</label>
                     <DropdownList
                         placeholder="Select album"
                         onChange={this.handleIDChange}
                         data={this.props.data.data.albums}
-                        textField={'AlbumName'}
-                        valueField={'AlbumID'}
-                        defaultValue={this.state.AlbumID}
+                        textField={'albumName'}
+                        valueField={'albumID'}
+                        defaultValue={this.state.albumID}
                     />
-                    <small className="form-text text-muted text-danger">{this.state.AlbumIDError}</small>
+                    <small className="form-text text-muted text-danger">{this.state.albumIDError}</small>
                 </div>
                 <div className="form-group">
-                    <label htmlFor="TrackName">Track name*</label>
+                    <label htmlFor="trackName">Track name*</label>
                     <input
                         className="form-control"
-                        id="TrackName"
+                        id="trackName"
                         placeholder="Enter track name"
-                        onChange={this.handleNameChange} value={this.state.TrackName}
+                        onChange={this.handleNameChange} value={this.state.trackName}
                     />
-                    <small className="form-text text-muted text-danger">{this.state.TrackNameError}</small>
+                    <small className="form-text text-muted text-danger">{this.state.trackNameError}</small>
                 </div>
                 <a className="btn btn-primary" onClick={this.saveData}>Save</a>
             </form>

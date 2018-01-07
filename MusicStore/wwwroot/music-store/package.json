@@ -5,6 +5,7 @@
   "dependencies": {
     "@types/react-table": "^6.7.0",
     "@types/react-widgets": "^3.2.33",
+    "axios": "^0.17.1",
     "bootstrap": "^3.3.7",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",

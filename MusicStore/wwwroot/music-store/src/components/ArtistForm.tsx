@@ -1,4 +1,5 @@
 import * as React from 'react';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 interface IArtistFormProps {
     changeContainer: (data: IAppStates) => void;
@@ -18,8 +19,8 @@ interface IAppStates {
 
 interface IArtistFormStates {
     error: string;
-    ArtistName: string;
-    ArtistNameError: string;
+    artistName: string;
+    artistNameError: string;
 }
 
 class ArtistForm extends React.PureComponent<IArtistFormProps, IArtistFormStates> {
@@ -29,50 +30,75 @@ class ArtistForm extends React.PureComponent<IArtistFormProps, IArtistFormStates
 
         this.state = {
             error: "",
-            ArtistName: (this.props.data.action === "edit") ? this.props.data.data.ArtistName : "",
-            ArtistNameError: "",
+            artistName: (this.props.data.action === "edit") ? this.props.data.data.artistName : "",
+            artistNameError: "",
         };
     }
 
-    private createRecord(data: any): void {
-        this.props.changeContainer({ display: "MainTable", data: {} });
-        // TODO: save data here
-        // if(error) this.setState({error: "simeErrror"})
+    private createRecord(): void {
+
+        const params = {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+
+        axios.post('/api/Artists', JSON.stringify({ name: this.state.artistName }), params)
+            .then((res: AxiosResponse) => {
+                this.props.changeContainer({ display: "MainTable", data: {} });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ error: "Can't create artist" });
+            });
     }
 
-    private editRecord(data: any): void {
-        this.props.changeContainer({ display: "MainTable", data: {} });
-        // TODO: save data here
-        // if(error) this.setState({error: "simeErrror"})
+    private editRecord(): void {
+
+        const params = {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+
+        //this.props.changeContainer({ display: "MainTable", data: {} });
+        axios.put('/api/Artists/' + this.props.data.data.artistID, JSON.stringify({ name: this.state.artistName }), params)
+            .then((res: AxiosResponse) => {
+                //this.props.changeContainer({ display: "MainTable", data: {} });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ error: "Can't edit artist" });
+            });
     }
+
+    //private deleteRecord()
 
     private saveData: (event: any) => void = (event) => {
         event.preventDefault();
         event.stopPropagation();
 
-        if (!this.state.ArtistName) {
-            this.setState({ ArtistNameError: "Required!" })
+        if (!this.state.artistName) {
+            this.setState({ artistNameError: "Required!" })
         } else {
             if (this.props.data.action === "edit") {
-                this.editRecord({});
+                this.editRecord();
             }
             else {
-                this.createRecord({});
+                this.createRecord();
             }
         }
     }
 
     private handleNameChange: (event: any) => void = (event) => {
-        this.setState({ ArtistName: event.target.value });
+        this.setState({ artistName: event.target.value });
     };
 
     render(): JSX.Element {
 
-        const ArtistID: JSX.Element | null = (this.props.data.action === "edit") ?
+        const artistID: JSX.Element | null = (this.props.data.action === "edit") ?
             (
                 <div className="form-group">
-                    <label htmlFor="ArtistID">Artist id*</label>
-                    <input className="form-control" id="ArtistID" value={this.props.data.data.ArtistID} disabled={true} />
+                    <label htmlFor="artistID">Artist id*</label>
+                    <input className="form-control" id="artistID" value={this.props.data.data.artistID} readOnly={true} />
                 </div>
             )
             :
@@ -81,16 +107,16 @@ class ArtistForm extends React.PureComponent<IArtistFormProps, IArtistFormStates
         return (
             <form>
                 <div className="text-danger">{this.state.error}</div>
-                {ArtistID}
+                {artistID}
                 <div className="form-group">
-                    <label htmlFor="ArtistName">Artist name*</label>
+                    <label htmlFor="artistName">Artist name*</label>
                     <input
                         className="form-control"
-                        id="ArtistName"
+                        id="artistName"
                         placeholder="Enter artist name"
-                        onChange={this.handleNameChange} value={this.state.ArtistName}
+                        onChange={this.handleNameChange} value={this.state.artistName}
                     />
-                    <small className="form-text text-muted text-danger">{this.state.ArtistNameError}</small>
+                    <small className="form-text text-muted text-danger">{this.state.artistNameError}</small>
                 </div>
                 <a className="btn btn-primary" onClick={this.saveData}>Save</a>
             </form>

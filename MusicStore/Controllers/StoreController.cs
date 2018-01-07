@@ -21,9 +21,9 @@ namespace MusicStore.Controllers
             _context = context;
         }
 
-        // GET: api/Sorted
+        // GET: api/Store
         [HttpGet]
-        public List<StoreResponse> GetSorted(string orderBy, string order, string filterBy, string filterValue, int pageSize, int page)
+        public List<StoreResponse> GetStore(string orderBy, string order, string filterBy, string filterValue, int pageSize, int page)
         {
 
             int recordCount = 0;

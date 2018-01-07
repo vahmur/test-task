@@ -1,15 +1,18 @@
 import * as React from 'react';
 import ReactTable from 'react-table';
 import { DropdownList } from 'react-widgets';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 interface IMainTableProps {
     changeContainer: (data: IAppStates) => void;
 }
 
 interface IMainTableStates {
+    errors: string;
     createItem: string;
     artists: Array<any>;
     albums: Array<any>;
+    tableData: Array<any>;
 }
 
 interface IAppStates {
@@ -23,16 +26,43 @@ interface IEditRecordData {
     data?: any;
 }
 
-class MainTable extends React.PureComponent<IMainTableProps, IMainTableStates> {
+class MainTable extends React.Component<IMainTableProps, IMainTableStates> {
 
     constructor(props: IMainTableProps) {
         super(props);
 
         this.state = {
+            errors: "",
             createItem: "artist",
-            artists: [{ ArtistID: 1, ArtistName: 'Metallica' }, { ArtistID: 2, ArtistName: 'Slayer' }],
-            albums: [{ AlbumID: 1, AlbumName: 'SomeAlbum' }, { AlbumID: 2, AlbumName: 'SomeAlbum2' },],
+            artists: [],
+            albums: [],
+            tableData: [],
         };
+    }
+
+    public componentWillMount() {
+
+        this.getMusicStore();
+
+        /* Get artist list from API */
+        axios.get('/api/Artists')
+            .then((res: AxiosResponse) => {
+                this.setState({ artists: res.data, errors: "" });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ errors: "Can't retreive artists API" });
+            });
+
+        /* Get album list from API */
+        axios.get('/api/Albums')
+            .then((res: AxiosResponse) => {
+                this.setState({ albums: res.data, errors: "" });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ errors: "Can't retreive albums API" });
+            });
+
+
     }
 
     private editOrCreateRecord: (action: string, recordType: string, data: any) => void = (action, recordType, data) => {
@@ -44,62 +74,22 @@ class MainTable extends React.PureComponent<IMainTableProps, IMainTableStates> {
         this.setState({ createItem: data });
     }
 
+    private getMusicStore: () => void = () => {
+        axios.get('/api/Store')
+            .then((res: AxiosResponse) => {
+                this.setState({ tableData: res.data, errors: "" });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ errors: "Can't retreive records from API" });
+            });
+    }
+
+
     render(): JSX.Element {
 
         let recordTypes = ['artist', 'album', 'track'];
 
-        const data = [
-            {
-                ArtistID: 11,
-                ArtistName: 'Metallica',
-                AlbumID: 12,
-                AlbumName: 'Black Album',
-                TrackID: 122,
-                TrackName: 'Some super track'
-            },
-            {
-                ArtistID: 11,
-                ArtistName: 'Metallica',
-                AlbumID: 12,
-                AlbumName: 'Black Album',
-                TrackID: 122,
-                TrackName: 'Some super track'
-            },
-            {
-                ArtistID: 11,
-                ArtistName: 'Metallica',
-                AlbumID: 12,
-                AlbumName: 'Black Album',
-                TrackID: 122,
-                TrackName: 'Some super track'
-            },
-            {
-                ArtistID: 11,
-                ArtistName: 'Metallica',
-                AlbumID: 12,
-                AlbumName: 'Black Album',
-                TrackID: 122,
-                TrackName: 'Some super track'
-            },
-            {
-                ArtistID: 11,
-                ArtistName: 'Metallica',
-                AlbumID: 12,
-                AlbumName: 'Black Album',
-                TrackID: 122,
-                TrackName: 'Some super track'
-            },
-            {
-                ArtistID: 11,
-                ArtistName: 'Metallica',
-                AlbumID: 12,
-                AlbumName: 'Black Album',
-                TrackID: 122,
-                TrackName: 'Some super track'
-            },
-        ]
-
-        const columns = [
+        const columns: Array<any> = [
             {
                 Header: '#',
                 Cell: (data: any) => <span>{data.index + 1}</span>,
@@ -107,23 +97,24 @@ class MainTable extends React.PureComponent<IMainTableProps, IMainTableStates> {
             },
             {
                 Header: 'Artist',
-                accessor: 'ArtistName',
+                accessor: 'artistName',
                 Cell: (data: any) => <a className="pointee" title="Edit artist" onClick={() => this.editOrCreateRecord("edit", "artist", { ...data.original, artists: this.state.artists, albums: this.state.albums })}>{data.value}</a>
             },
             {
                 Header: 'Album',
-                accessor: 'AlbumName',
+                accessor: 'albumName',
                 Cell: (data: any) => <a className="pointee" title="Edit album" onClick={() => this.editOrCreateRecord("edit", "album", { ...data.original, artists: this.state.artists, albums: this.state.albums })}>{data.value}</a>
             },
             {
                 Header: 'Track',
-                accessor: 'TrackName',
+                accessor: 'trackName',
                 Cell: (data: any) => <a className="pointee" title="Edit track" onClick={() => this.editOrCreateRecord("edit", "track", { ...data.original, artists: this.state.artists, albums: this.state.albums })}>{data.value}</a>
             },
         ];
 
         return (
             <div>
+                <div className="text-danger">{this.state.errors}</div>
                 <div className="row">
                     <div className="jumbotron action-panel">
                         <div className="col-md-6">
@@ -150,7 +141,7 @@ class MainTable extends React.PureComponent<IMainTableProps, IMainTableStates> {
                 </div>
                 <div className="row">
                     <ReactTable
-                        data={data}
+                        data={this.state.tableData}
                         columns={columns}
                         defaultPageSize={10}
                         pageSizeOptions={[5, 10, 20, 25, 50]}

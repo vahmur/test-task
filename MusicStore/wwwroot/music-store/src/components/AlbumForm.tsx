@@ -19,10 +19,10 @@ interface IAppStates {
 
 interface IArtistFormStates {
     error: string;
-    ArtistID: number;
-    ArtistIDError: string;
-    AlbumName: string;
-    AlbumNameError: string;
+    artistID: number;
+    artistIDError: string;
+    albumName: string;
+    albumNameError: string;
 }
 
 class AlbumForm extends React.PureComponent<IAlbumFormProps, IArtistFormStates> {
@@ -32,10 +32,10 @@ class AlbumForm extends React.PureComponent<IAlbumFormProps, IArtistFormStates> 
 
         this.state = {
             error: "",
-            ArtistID: (this.props.data.action === "edit") ? this.props.data.data.ArtistID : null,
-            ArtistIDError: "",
-            AlbumName: (this.props.data.action === "edit") ? this.props.data.data.AlbumName : "",
-            AlbumNameError: "",
+            artistID: (this.props.data.action === "edit") ? this.props.data.data.artistID : null,
+            artistIDError: "",
+            albumName: (this.props.data.action === "edit") ? this.props.data.data.albumName : "",
+            albumNameError: "",
         };
     }
 
@@ -57,14 +57,22 @@ class AlbumForm extends React.PureComponent<IAlbumFormProps, IArtistFormStates> 
 
         let error: boolean = false;
 
-        if (!this.state.ArtistID) {
-            this.setState({ ArtistIDError: "Required!" });
+        if (!this.state.artistID) {
+            this.setState({ artistIDError: "Required!" });
             error = true;
+        } else {
+            if (this.state.artistIDError) {
+                this.setState({ artistIDError: "" });
+            }
         }
 
-        if (!this.state.AlbumName) {
-            this.setState({ AlbumNameError: "Required!" });
+        if (!this.state.albumName) {
+            this.setState({ albumNameError: "Required!" });
             error = true;
+        } else {
+            if (this.state.albumNameError) {
+                this.setState({ albumNameError: "" });
+            }
         }
 
         if (!error) {
@@ -77,20 +85,20 @@ class AlbumForm extends React.PureComponent<IAlbumFormProps, IArtistFormStates> 
     }
 
     private handleNameChange: (event: any) => void = (event) => {
-        this.setState({ AlbumName: event.target.value });
+        this.setState({ albumName: event.target.value });
     };
 
     private handleIDChange: (value: any) => void = (value) => {
-        this.setState({ ArtistID: value.ArtistID });
+        this.setState({ artistID: value.artistID });
     };
 
     render(): JSX.Element {
 
-        const AlbumID: JSX.Element | null = (this.props.data.action === "edit") ?
+        const albumID: JSX.Element | null = (this.props.data.action === "edit") ?
             (
                 <div className="form-group">
-                    <label htmlFor="AlbumID">Album id*</label>
-                    <input className="form-control" id="AlbumID" value={this.props.data.data.AlbumID} disabled={true} />
+                    <label htmlFor="albumID">Album id*</label>
+                    <input className="form-control" id="albumID" value={this.props.data.data.albumID} readOnly={true} />
                 </div>
             )
             :
@@ -99,28 +107,28 @@ class AlbumForm extends React.PureComponent<IAlbumFormProps, IArtistFormStates> 
         return (
             <form>
                 <div className="text-danger">{this.state.error}</div>
-                {AlbumID}
+                {albumID}
                 <div className="form-group">
-                    <label htmlFor="ArtistID">Artist*</label>
+                    <label htmlFor="artistID">Artist*</label>
                     <DropdownList
                         placeholder="Select artist"
                         onChange={this.handleIDChange}
                         data={this.props.data.data.artists}
-                        textField={'ArtistName'}
-                        valueField={'ArtistID'}
-                        defaultValue={this.state.ArtistID}
+                        textField={'name'}
+                        valueField={'artistID'}
+                        defaultValue={this.state.artistID}
                     />
-                    <small className="form-text text-muted text-danger">{this.state.ArtistIDError}</small>
+                    <small className="form-text text-muted text-danger">{this.state.artistIDError}</small>
                 </div>
                 <div className="form-group">
-                    <label htmlFor="AlbumName">Album name*</label>
+                    <label htmlFor="albumName">Album name*</label>
                     <input
                         className="form-control"
-                        id="AlbumName"
+                        id="albumName"
                         placeholder="Enter album name"
-                        onChange={this.handleNameChange} value={this.state.AlbumName}
+                        onChange={this.handleNameChange} value={this.state.albumName}
                     />
-                    <small className="form-text text-muted text-danger">{this.state.AlbumNameError}</small>
+                    <small className="form-text text-muted text-danger">{this.state.albumNameError}</small>
                 </div>
                 <a className="btn btn-primary" onClick={this.saveData}>Save</a>
             </form>
