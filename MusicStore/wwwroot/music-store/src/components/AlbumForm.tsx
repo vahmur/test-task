@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { DropdownList } from 'react-widgets';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 interface IAlbumFormProps {
     changeContainer: (data: IAppStates) => void;
@@ -25,6 +26,9 @@ interface IArtistFormStates {
     albumNameError: string;
 }
 
+/*
+ * Album create/update/delete form
+ */
 class AlbumForm extends React.PureComponent<IAlbumFormProps, IArtistFormStates> {
 
     constructor(props: IAlbumFormProps) {
@@ -39,19 +43,58 @@ class AlbumForm extends React.PureComponent<IAlbumFormProps, IArtistFormStates> 
         };
     }
 
-    private createRecord(data: any): void {
-        this.props.changeContainer({ display: "MainTable", data: {} });
-        // TODO: save data here
-        // if(error) this.setState({error: "simeErrror"})
+    /*
+     * Create album
+     */
+    private createRecord(): void {
+        const params = {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+
+        axios.post('/api/Albums', JSON.stringify({ albumName: this.state.albumName, artistID: this.state.artistID }), params)
+            .then((res: AxiosResponse) => {
+                this.props.changeContainer({ display: "MainTable", data: {} });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ error: "Can't create album" });
+            });
     }
 
-    private editRecord(data: any): void {
-        this.props.changeContainer({ display: "MainTable", data: {} });
-        // TODO: save data here
-        // if(error) this.setState({error: "simeErrror"})
+    /*
+     * Edit album
+     */
+    private editRecord(): void {
+        const params = {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+
+        axios.put('/api/Albums/' + this.props.data.data.albumID, JSON.stringify({ artistID: this.state.artistID, albumId: this.props.data.data.albumID, albumName: this.state.albumName }), params)
+            .then((res: AxiosResponse) => {
+                this.props.changeContainer({ display: "MainTable", data: {} });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ error: "Can't edit album" });
+            });
     }
 
-    private saveData: (event: any) => void = (event) => {
+    /*
+     * Delete album
+     */
+    private deleteRecord: () => void = () => {
+        axios.delete('/api/Albums/' + this.props.data.data.albumID)
+            .then((res: AxiosResponse) => {
+                this.props.changeContainer({ display: "MainTable", data: {} });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ error: "Can't delete album" });
+            });
+    }
+
+    private habdleSaveData: (event: any) => void = (event) => {
         event.preventDefault();
         event.stopPropagation();
 
@@ -77,9 +120,9 @@ class AlbumForm extends React.PureComponent<IAlbumFormProps, IArtistFormStates> 
 
         if (!error) {
             if (this.props.data.action === "edit") {
-                this.editRecord({});
+                this.editRecord();
             } else {
-                this.createRecord({});
+                this.createRecord();
             }
         }
     }
@@ -104,6 +147,13 @@ class AlbumForm extends React.PureComponent<IAlbumFormProps, IArtistFormStates> 
             :
             null;
 
+        const deleteButton: JSX.Element | null = (this.props.data.action === "edit") ?
+            (
+                <a className="btn btn-danger btn-delete" onClick={this.deleteRecord}>Delete</a>
+            )
+            :
+            null;
+
         return (
             <form>
                 <div className="text-danger">{this.state.error}</div>
@@ -122,15 +172,11 @@ class AlbumForm extends React.PureComponent<IAlbumFormProps, IArtistFormStates> 
                 </div>
                 <div className="form-group">
                     <label htmlFor="albumName">Album name*</label>
-                    <input
-                        className="form-control"
-                        id="albumName"
-                        placeholder="Enter album name"
-                        onChange={this.handleNameChange} value={this.state.albumName}
-                    />
+                    <input className="form-control" id="albumName" placeholder="Enter album name" onChange={this.handleNameChange} value={this.state.albumName} />
                     <small className="form-text text-muted text-danger">{this.state.albumNameError}</small>
                 </div>
-                <a className="btn btn-primary" onClick={this.saveData}>Save</a>
+                <a className="btn btn-primary" onClick={this.habdleSaveData}>Save</a>
+                {deleteButton}
             </form>
         );
     }

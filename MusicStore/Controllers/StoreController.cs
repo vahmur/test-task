@@ -23,7 +23,7 @@ namespace MusicStore.Controllers
 
         // GET: api/Store
         [HttpGet]
-        public List<StoreResponse> GetStore(string orderBy, string order, string filterBy, string filterValue, int pageSize, int page)
+        public List<StoreResponse> GetStore(string orderBy, string order, string filterValue, int pageSize, int page)
         {
 
             int recordCount = 0;
@@ -43,20 +43,9 @@ namespace MusicStore.Controllers
             /*
              * Filtering
              */
-            if (!String.IsNullOrEmpty(filterBy) && !String.IsNullOrEmpty(filterValue))
+            if (!String.IsNullOrEmpty(filterValue))
             {
-                switch (filterBy)
-                {
-                    case "ArtistName":
-                        data = data.Where(s => s.ArtistName.Contains(filterValue));
-                        break;
-                    case "AlbumName":
-                        data = data.Where(s => s.AlbumName.Contains(filterValue));
-                        break;
-                    case "TrackName":
-                        data = data.Where(s => s.TrackName.Contains(filterValue));
-                        break;
-                }
+                data = data.Where(s => s.ArtistName.Contains(filterValue) || s.AlbumName.Contains(filterValue) || s.TrackName.Contains(filterValue));
             }
 
             /*

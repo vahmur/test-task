@@ -23,6 +23,9 @@ interface IArtistFormStates {
     artistNameError: string;
 }
 
+/*
+ * Artist create/update/delete form
+ */
 class ArtistForm extends React.PureComponent<IArtistFormProps, IArtistFormStates> {
 
     constructor(props: IArtistFormProps) {
@@ -35,8 +38,10 @@ class ArtistForm extends React.PureComponent<IArtistFormProps, IArtistFormStates
         };
     }
 
+    /*
+     * Create artist
+     */
     private createRecord(): void {
-
         const params = {
             headers: {
                 'Content-Type': 'application/json',
@@ -52,27 +57,42 @@ class ArtistForm extends React.PureComponent<IArtistFormProps, IArtistFormStates
             });
     }
 
+    /*
+     * Edit artist
+     */
     private editRecord(): void {
-
         const params = {
             headers: {
                 'Content-Type': 'application/json',
             }
         }
 
-        //this.props.changeContainer({ display: "MainTable", data: {} });
-        axios.put('/api/Artists/' + this.props.data.data.artistID, JSON.stringify({ name: this.state.artistName }), params)
+        axios.put('/api/Artists/' + this.props.data.data.artistID, JSON.stringify({ ArtistID: this.props.data.data.artistID, name: this.state.artistName }), params)
             .then((res: AxiosResponse) => {
-                //this.props.changeContainer({ display: "MainTable", data: {} });
+                this.props.changeContainer({ display: "MainTable", data: {} });
             })
             .catch((error: AxiosError) => {
                 this.setState({ error: "Can't edit artist" });
             });
     }
 
-    //private deleteRecord()
+    /*
+     * Delete artist
+     */
+    private deleteRecord: () => void = () => {
+        axios.delete('/api/Artists/' + this.props.data.data.artistID)
+            .then((res: AxiosResponse) => {
+                this.props.changeContainer({ display: "MainTable", data: {} });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ error: "Can't delete artist" });
+            });
+    }
 
-    private saveData: (event: any) => void = (event) => {
+    /*
+     * Save button click handler
+     */
+    private handleSaveData: (event: any) => void = (event) => {
         event.preventDefault();
         event.stopPropagation();
 
@@ -81,8 +101,7 @@ class ArtistForm extends React.PureComponent<IArtistFormProps, IArtistFormStates
         } else {
             if (this.props.data.action === "edit") {
                 this.editRecord();
-            }
-            else {
+            } else {
                 this.createRecord();
             }
         }
@@ -104,21 +123,24 @@ class ArtistForm extends React.PureComponent<IArtistFormProps, IArtistFormStates
             :
             null;
 
+        const deleteButton: JSX.Element | null = (this.props.data.action === "edit") ?
+            (
+                <a className="btn btn-danger btn-delete" onClick={this.deleteRecord}>Delete</a>
+            )
+            :
+            null;
+
         return (
             <form>
                 <div className="text-danger">{this.state.error}</div>
                 {artistID}
                 <div className="form-group">
                     <label htmlFor="artistName">Artist name*</label>
-                    <input
-                        className="form-control"
-                        id="artistName"
-                        placeholder="Enter artist name"
-                        onChange={this.handleNameChange} value={this.state.artistName}
-                    />
+                    <input className="form-control" id="artistName" placeholder="Enter artist name" onChange={this.handleNameChange} value={this.state.artistName} />
                     <small className="form-text text-muted text-danger">{this.state.artistNameError}</small>
                 </div>
-                <a className="btn btn-primary" onClick={this.saveData}>Save</a>
+                <a className="btn btn-primary" onClick={this.handleSaveData}>Save</a>
+                {deleteButton}
             </form>
         );
     }

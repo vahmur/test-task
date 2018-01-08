@@ -19,11 +19,13 @@ interface IAppStates {
     data: any;
 }
 
+/*
+ * Record create/update/delete form container
+ */
 class EditRecord extends React.PureComponent<EditRecordProps, any> {
 
-    constructor(props: any) {
+    constructor(props: EditRecordProps) {
         super(props);
-        console.log(this.props)
     }
 
     render(): JSX.Element {

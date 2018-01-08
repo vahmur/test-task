@@ -13,6 +13,7 @@ interface IMainTableStates {
     artists: Array<any>;
     albums: Array<any>;
     tableData: Array<any>;
+    filterValue: string;
 }
 
 interface IAppStates {
@@ -26,6 +27,9 @@ interface IEditRecordData {
     data?: any;
 }
 
+/*
+ * Main music store data table
+ */
 class MainTable extends React.Component<IMainTableProps, IMainTableStates> {
 
     constructor(props: IMainTableProps) {
@@ -37,7 +41,24 @@ class MainTable extends React.Component<IMainTableProps, IMainTableStates> {
             artists: [],
             albums: [],
             tableData: [],
+            filterValue: "",
         };
+    }
+
+    /*
+     * Filter value change handler
+     */
+    private handleFilterChange: (event: any) => void = (event) => {
+        this.setState({ filterValue: event.target.value || "" });
+    };
+
+    /*
+     * Search field enter key press
+     */
+    private handlefilterKeyPress: (event: any) => void = (e) => {
+        if (e.key === 'Enter') {
+            this.getMusicStore();
+        }
     }
 
     public componentWillMount() {
@@ -61,21 +82,36 @@ class MainTable extends React.Component<IMainTableProps, IMainTableStates> {
             .catch((error: AxiosError) => {
                 this.setState({ errors: "Can't retreive albums API" });
             });
-
-
     }
 
+    /*
+     * Redirect to edit/create page
+     */
     private editOrCreateRecord: (action: string, recordType: string, data: any) => void = (action, recordType, data) => {
-
         this.props.changeContainer({ display: "EditPage", data: { action: action, recordType: recordType, data: data } })
     };
 
-    private createItemLIstChange: (data: any) => void = (data) => {
+    /*
+     * Change type of data to create
+     */
+    private createItemListChange: (data: any) => void = (data) => {
         this.setState({ createItem: data });
     }
 
+    /*
+     * Get table data from api
+     */
     private getMusicStore: () => void = () => {
-        axios.get('/api/Store')
+
+        let params: any = {
+            params: {}
+        }
+
+        if (this.state.filterValue) {
+            params.params.filterValue = this.state.filterValue;
+        }
+
+        axios.get('/api/Store', params)
             .then((res: AxiosResponse) => {
                 this.setState({ tableData: res.data, errors: "" });
             })
@@ -84,7 +120,9 @@ class MainTable extends React.Component<IMainTableProps, IMainTableStates> {
             });
     }
 
-
+    /*
+     * Hm...render function 8)
+     */
     render(): JSX.Element {
 
         let recordTypes = ['artist', 'album', 'track'];
@@ -122,19 +160,23 @@ class MainTable extends React.Component<IMainTableProps, IMainTableStates> {
                                 <DropdownList
                                     data={recordTypes}
                                     defaultValue={"artist"}
-                                    onChange={this.createItemLIstChange}
+                                    onChange={this.createItemListChange}
                                 />
                             </div>
-                            <button className="btn btn-default" onClick={() => this.editOrCreateRecord("create", this.state.createItem, { artists: this.state.artists, albums: this.state.albums })}>Create</button>
+                            <div className="col-md-4">
+                                <button className="btn btn-default" onClick={() => this.editOrCreateRecord("create", this.state.createItem, { artists: this.state.artists, albums: this.state.albums })}>Create</button>
+                            </div>
                         </div>
                         <div className="col-md-6">
-                            <div className="input-group stylish-input-group">
-                                <input type="text" className="form-control" placeholder="Search" />
-                                <span className="input-group-addon">
-                                    <button type="submit">
-                                        <span className="glyphicon glyphicon-search"></span>
-                                    </button>
-                                </span>
+                            <div className="col-md-12">
+                                <div className="input-group stylish-input-group">
+                                    <input type="text" className="form-control" placeholder="Search" onChange={this.handleFilterChange} value={this.state.filterValue} onKeyPress={this.handlefilterKeyPress} />
+                                    <span className="input-group-addon">
+                                        <button type="submit" onClick={this.getMusicStore}>
+                                            <span className="glyphicon glyphicon-search" />
+                                        </button>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>

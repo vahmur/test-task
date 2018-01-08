@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { DropdownList } from 'react-widgets';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 interface ITrackFromProps {
     changeContainer: (data: IAppStates) => void;
@@ -25,6 +26,9 @@ interface IArtistFormStates {
     trackNameError: string;
 }
 
+/*
+ * Track create/update/delete form
+ */
 class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> {
 
     constructor(props: ITrackFromProps) {
@@ -39,19 +43,58 @@ class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> 
         };
     }
 
-    private createRecord(data: any): void {
-        this.props.changeContainer({ display: "MainTable", data: {} });
-        // TODO: save data here
-        // if(error) this.setState({error: "simeErrror"})
+    /*
+     * Create track
+     */
+    private createRecord(): void {
+        const params = {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+
+        axios.post('/api/Tracks', JSON.stringify({ trackName: this.state.trackName, albumID: this.state.albumID }), params)
+            .then((res: AxiosResponse) => {
+                this.props.changeContainer({ display: "MainTable", data: {} });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ error: "Can't create track" });
+            });
     }
 
-    private editRecord(data: any): void {
-        this.props.changeContainer({ display: "MainTable", data: {} });
-        // TODO: save data here
-        // if(error) this.setState({error: "simeErrror"})
+    /*
+     * Edit track
+     */
+    private editRecord(): void {
+        const params = {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+
+        axios.put('/api/Tracks/' + this.props.data.data.trackID, JSON.stringify({ albumID: this.state.albumID, trackID: this.props.data.data.trackID, trackName: this.state.trackName }), params)
+            .then((res: AxiosResponse) => {
+                this.props.changeContainer({ display: "MainTable", data: {} });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ error: "Can't edit track" });
+            });
     }
 
-    private saveData: (event: any) => void = (event) => {
+    /*
+     * Delete track
+     */
+    private deleteRecord: () => void = () => {
+        axios.delete('/api/Tracks/' + this.props.data.data.trackID)
+            .then((res: AxiosResponse) => {
+                this.props.changeContainer({ display: "MainTable", data: {} });
+            })
+            .catch((error: AxiosError) => {
+                this.setState({ error: "Can't delete track" });
+            });
+    }
+
+    private habdleSaveData: (event: any) => void = (event) => {
         event.preventDefault();
         event.stopPropagation();
 
@@ -60,8 +103,7 @@ class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> 
         if (!this.state.albumID) {
             this.setState({ albumIDError: "Required!" });
             error = true;
-        }
-        else {
+        } else {
             if (this.state.albumIDError) {
                 this.setState({ albumIDError: "" });
             }
@@ -70,8 +112,7 @@ class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> 
         if (!this.state.trackName) {
             this.setState({ trackNameError: "Required!" });
             error = true;
-        }
-        else {
+        } else {
             if (this.state.trackNameError) {
                 this.setState({ trackNameError: "" });
             }
@@ -79,9 +120,9 @@ class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> 
 
         if (!error) {
             if (this.props.data.action === "edit") {
-                this.editRecord({});
+                this.editRecord();
             } else {
-                this.createRecord({});
+                this.createRecord();
             }
         }
     }
@@ -106,6 +147,13 @@ class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> 
             :
             null;
 
+        const deleteButton: JSX.Element | null = (this.props.data.action === "edit") ?
+            (
+                <a className="btn btn-danger btn-delete" onClick={this.deleteRecord}>Delete</a>
+            )
+            :
+            null;
+
         return (
             <form>
                 <div className="text-danger">{this.state.error}</div>
@@ -124,15 +172,11 @@ class TrackFrom extends React.PureComponent<ITrackFromProps, IArtistFormStates> 
                 </div>
                 <div className="form-group">
                     <label htmlFor="trackName">Track name*</label>
-                    <input
-                        className="form-control"
-                        id="trackName"
-                        placeholder="Enter track name"
-                        onChange={this.handleNameChange} value={this.state.trackName}
-                    />
+                    <input className="form-control" id="trackName" placeholder="Enter track name" onChange={this.handleNameChange} value={this.state.trackName} />
                     <small className="form-text text-muted text-danger">{this.state.trackNameError}</small>
                 </div>
-                <a className="btn btn-primary" onClick={this.saveData}>Save</a>
+                <a className="btn btn-primary" onClick={this.habdleSaveData}>Save</a>
+                {deleteButton}
             </form>
         );
     }

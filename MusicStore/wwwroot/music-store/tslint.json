@@ -28,7 +28,7 @@
         "label-position": true,
         "max-line-length": [
             true,
-            200
+            400
         ],
         "no-any": false,
         "no-arg": true,
